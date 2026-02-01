@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENDREST - Pinterest Style Media Browser</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        :root {
+            --primary-color: #e60023;
+            --primary-hover: #ad081b;
+            --bg-color: #ffffff;
+            --text-color: #111111;
+            --light-text: #767676;
+            --border-color: #e1e1e1;
+            --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --header-height: 80px;
+            --nav-height: 70px;
+            --safe-area: env(safe-area-inset-bottom, 0);
+        }
+        
+        body {
+            background-color: #f8f8f8;
+            color: var(--text-color);
+            line-height: 1.5;
+            padding-bottom: calc(var(--nav-height) + var(--safe-area));
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--bg-color);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0 20px;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo i {
+            font-size: 24px;
+        }
+        
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 20px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 24px;
+            border: 2px solid var(--border-color);
+            font-size: 16px;
+            background-color: #efefef;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: white;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        /* Main Content */
+        main {
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary-color);
+        }
+        
+        /* Masonry Grid */
+        .masonry-grid {
+            column-count: 2;
+            column-gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .masonry-grid {
+                column-count: 3;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .masonry-grid {
+                column-count: 4;
+            }
+        }
+        
+        /* Media Card */
+        .media-card {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: white;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            transition: transform 0.3s;
+        }
+        
+        .media-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .media-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .media-image, .media-video {
+            width: 100%;
+            display: block;
+            transition: transform 0.5s;
+        }
+        
+        .media-video {
+            height: 250px;
+            object-fit: cover;
+        }
+        
+        .media-container:hover .media-image {
+            transform: scale(1.05);
+        }
+        
+        .media-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .media-badge.photo {
+            background-color: #4CAF50;
+        }
+        
+        .media-badge.video {
+            background-color: #FF5722;
+        }
+        
+        .media-info {
+            padding: 15px;
+        }
+        
+        .photographer {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .photographer i {
+            color: var(--primary-color);
+        }
+        
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background-color: #f5f5f5;
+            color: var(--text-color);
+        }
+        
+        .action-btn.liked {
+            color: var(--primary-color);
+        }
+        
+        .action-btn.saved {
+            color: var(--primary-color);
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-color);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            padding-bottom: calc(12px + var(--safe-area));
+            z-index: 100;
+            height: var(--nav-height);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--light-text);
+            font-size: 12px;
+            transition: color 0.2s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+        
+        .nav-item i {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+        
+        /* Modal - Video Player */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: var(--bg-color);
+            margin: 20px auto;
+            max-width: 800px;
+            border-radius: 16px;
+            overflow: hidden;
+            animation: modalFade 0.3s;
+        }
+        
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-video {
+            width: 100%;
+            display: block;
+            max-height: 60vh;
+            object-fit: contain;
+            background-color: #000;
+        }
+        
+        .modal-info {
+            padding: 20px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .modal-btn.download {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .modal-btn.download:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .modal-btn.close {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+        }
+        
+        .modal-btn.close:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Loading & Empty States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--light-text);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--light-text);
+        }
+        
+        .empty-state i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .remove-btn {
+            color: #ff4444 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Search -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-camera"></i>
+            <span>ENDREST</span>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search for photos and videos...">
+            <button class="search-btn" id="searchBtn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        
+        <div class="header-actions">
+            <button class="action-btn" id="themeToggle" title="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Home Tab -->
+        <section id="homeTab" class="tab-content active">
+            <h2 class="section-title">
+                <i class="fas fa-home"></i>
+                <span>Discover</span>
+            </h2>
+            <div id="homeGrid" class="masonry-grid">
+                <!-- Media cards will be inserted here -->
+            </div>
+            <div id="homeLoading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading amazing content...</p>
+            </div>
+        </section>
+        
+        <!-- Search Tab -->
+        <section id="searchTab" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-search"></i>
+                <span>Search Results</span>
+            </h2>
+            <div id="searchGrid" class="masonry-grid">
+                <!-- Search results will be inserted here -->
+            </div>
+            <div id="searchEmpty" class="empty-state hidden">
+                <i class="fas fa-search"></i>
+                <h3>No results found</h3>
+                <p>Try searching for something else</p>
+            </div>
+            <div id="searchLoading" class="loading hidden">
+                <div class="loading-spinner"></div>
+                <p>Searching...</p>
+            </div>
+        </section>
+        
+        <!-- Trending Tab -->
+        <section id="trendingTab" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-fire"></i>
+                <span>Trending Now</span>
+            </h2>
+            <div id="trendingGrid" class="masonry-grid">
+                <!-- Trending media will be inserted here -->
+            </div>
+            <div id="trendingLoading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading trending content...</p>
+            </div>
+        </section>
+        
+        <!-- Saved Tab -->
+        <section id="savedTab" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-bookmark"></i>
+                <span>Your Saved Items</span>
+            </h2>
+            <div id="savedGrid" class="masonry-grid">
+                <!-- Saved media will be inserted here -->
+            </div>
+            <div id="savedEmpty" class="empty-state">
+                <i class="fas fa-bookmark"></i>
+                <h3>No saved items yet</h3>
+                <p>Start saving your favorite photos and videos</p>
+            </div>
+        </section>
+        
+        <!-- Downloads Tab -->
+        <section id="downloadsTab" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-download"></i>
+                <span>Download History</span>
+            </h2>
+            <div id="downloadsList">
+                <!-- Download history will be inserted here -->
+            </div>
+            <div id="downloadsEmpty" class="empty-state">
+                <i class="fas fa-download"></i>
+                <h3>No downloads yet</h3>
+                <p>Download photos and videos to see them here</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Video Player Modal -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <video id="modalVideoPlayer" class="modal-video" controls></video>
+            <div class="modal-info">
+                <div class="photographer">
+                    <i class="fas fa-user"></i>
+                    <span id="modalPhotographer"></span>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn download" id="modalDownloadBtn">
+                        <i class="fas fa-download"></i>
+                        Download Video
+                    </button>
+                    <button class="modal-btn close" id="modalCloseBtn">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-tab="homeTab">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="searchTab">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="trendingTab">
+            <i class="fas fa-fire"></i>
+            <span>Trending</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="savedTab">
+            <i class="fas fa-bookmark"></i>
+            <span>Saved</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="downloadsTab">
+            <i class="fas fa-download"></i>
+            <span>Downloads</span>
+        </a>
+    </nav>
+
+    <script>
+        // App Configuration
+        const APP_NAME = "ENDREST";
+        const PEXELS_API_KEY = "Ja01iiwipspN59D8iJKauPh61IYdZIkJbUnJsYW4vVY2iTIChmKFR5LS";
+        
+        // State Management
+        let appState = {
+            currentTab: 'homeTab',
+            likedItems: JSON.parse(localStorage.getItem('likedItems') || '[]'),
+            savedItems: JSON.parse(localStorage.getItem('savedItems') || '[]'),
+            downloadedItems: JSON.parse(localStorage.getItem('downloadedItems') || '[]'),
+            currentSearch: '',
+            currentVideo: null,
+            homePage: 1,
+            searchPage: 1,
+            trendingPage: 1
+        };
+        
+        // DOM Elements
+        const tabContents = document.querySelectorAll('.tab-content');
+        const navItems = document.querySelectorAll('.nav-item');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const videoModal = document.getElementById('videoModal');
+        const modalVideoPlayer = document.getElementById('modalVideoPlayer');
+        const modalPhotographer = document.getElementById('modalPhotographer');
+        const modalDownloadBtn = document.getElementById('modalDownloadBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            loadHomeContent();
+            loadTrendingContent();
+            updateSavedGrid();
+            updateDownloadsList();
+        });
+        
+        // App Initialization
+        function initApp() {
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Set initial theme
+            if (localStorage.getItem('theme') === 'dark') {
+                enableDarkTheme();
+            }
+        }
+        
+        // Event Listeners Setup
+        function setupEventListeners() {
+            // Navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tabId = item.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+            
+            // Search functionality
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+            
+            // Debounced search
+            let searchTimeout;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (searchInput.value.length >= 2) {
+                        performSearch();
+                    }
+                }, 500);
+            });
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Modal close
+            modalCloseBtn.addEventListener('click', () => {
+                videoModal.style.display = 'none';
+                modalVideoPlayer.pause();
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === videoModal) {
+                    videoModal.style.display = 'none';
+                    modalVideoPlayer.pause();
+                }
+            });
+            
+            // Modal download button
+            modalDownloadBtn.addEventListener('click', downloadCurrentVideo);
+        }
+        
+        // Tab Switching
+        function switchTab(tabId) {
+            // Update UI
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            
+            // Update app state
+            appState.currentTab = tabId;
+            
+            // Load content if needed
+            if (tabId === 'savedTab') {
+                updateSavedGrid();
+            } else if (tabId === 'downloadsTab') {
+                updateDownloadsList();
+            }
+        }
+        
+        // Theme Management
+        function toggleTheme() {
+            if (document.body.classList.contains('dark-theme')) {
+                disableDarkTheme();
+            } else {
+                enableDarkTheme();
+            }
+        }
+        
+        function enableDarkTheme() {
+            document.body.classList.add('dark-theme');
+            document.documentElement.style.setProperty('--bg-color', '#121212');
+            document.documentElement.style.setProperty('--text-color', '#ffffff');
+            document.documentElement.style.setProperty('--light-text', '#b0b0b0');
+            document.documentElement.style.setProperty('--border-color', '#333333');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            localStorage.setItem('theme', 'dark');
+        }
+        
+        function disableDarkTheme() {
+            document.body.classList.remove('dark-theme');
+            document.documentElement.style.setProperty('--bg-color', '#ffffff');
+            document.documentElement.style.setProperty('--text-color', '#111111');
+            document.documentElement.style.setProperty('--light-text', '#767676');
+            document.documentElement.style.setProperty('--border-color', '#e1e1e1');
+            themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', 'light');
+        }
+        
+        // API Functions
+        async function fetchPhotos(page = 1, perPage = 20) {
+            try {
+                const response = await fetch(`https://api.pexels.com/v1/curated?page=${page}&per_page=${perPage}`, {
+                    headers: {
+                        'Authorization': PEXELS_API_KEY
+                    }
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching photos:', error);
+                return { photos: [] };
+            }
+        }
+        
+        async function fetchVideos(page = 1, perPage = 20) {
+            try {
+                const response = await fetch(`https://api.pexels.com/videos/popular?page=${page}&per_page=${perPage}`, {
+                    headers: {
+                        'Authorization': PEXELS_API_KEY
+                    }
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching videos:', error);
+                return { videos: [] };
+            }
+        }
+        
+        async function searchMedia(query, page = 1, perPage = 30) {
+            try {
+                const response = await fetch(`https://api.pexels.com/v1/search?query=${query}&page=${page}&per_page=${perPage}`, {
+                    headers: {
+                        'Authorization': PEXELS_API_KEY
+                    }
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Error searching media:', error);
+                return { photos: [] };
+            }
+        }
+        
+        // Content Loading
+        async function loadHomeContent() {
+            const homeGrid = document.getElementById('homeGrid');
+            const homeLoading = document.getElementById('homeLoading');
+            
+            // Show loading
+            homeLoading.classList.remove('hidden');
+            
+            // Fetch both photos and videos
+            const [photosData, videosData] = await Promise.all([
+                fetchPhotos(appState.homePage, 15),
+                fetchVideos(appState.homePage, 10)
+            ]);
+            
+            // Hide loading
+            homeLoading.classList.add('hidden');
+            
+            // Combine and shuffle results
+            const allMedia = [
+                ...photosData.photos.map(photo => ({ ...photo, type: 'photo' })),
+                ...videosData.videos.map(video => ({ ...video, type: 'video' }))
+            ];
+            
+            // Shuffle array
+            const shuffledMedia = allMedia.sort(() => Math.random() - 0.5);
+            
+            // Render to grid
+            shuffledMedia.forEach(media => {
+                const card = createMediaCard(media);
+                homeGrid.appendChild(card);
+            });
+        }
+        
+        async function loadTrendingContent() {
+            const trendingGrid = document.getElementById('trendingGrid');
+            const trendingLoading = document.getElementById('trendingLoading');
+            
+            // Show loading
+            trendingLoading.classList.remove('hidden');
+            
+            // Fetch trending videos (Pexels doesn't have trending photos endpoint)
+            const videosData = await fetchVideos(appState.trendingPage, 25);
+            
+            // Hide loading
+            trendingLoading.classList.add('hidden');
+            
+            // Render to grid
+            videosData.videos.forEach(video => {
+                const card = createMediaCard({ ...video, type: 'video' });
+                trendingGrid.appendChild(card);
+            });
+        }
+        
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+            
+            const searchGrid = document.getElementById('searchGrid');
+            const searchLoading = document.getElementById('searchLoading');
+            const searchEmpty = document.getElementById('searchEmpty');
+            
+            // Clear previous results
+            searchGrid.innerHTML = '';
+            searchEmpty.classList.add('hidden');
+            searchLoading.classList.remove('hidden');
+            
+            // Switch to search tab
+            switchTab('searchTab');
+            
+            // Perform search
+            const searchData = await searchMedia(query, appState.searchPage, 30);
+            
+            // Hide loading
+            searchLoading.classList.add('hidden');
+            
+            // Check if we have results
+            if (searchData.photos && searchData.photos.length > 0) {
+                searchData.photos.forEach(photo => {
+                    const card = createMediaCard({ ...photo, type: 'photo' });
+                    searchGrid.appendChild(card);
+                });
+            } else {
+                searchEmpty.classList.remove('hidden');
+            }
+        }
+        
+        // Media Card Creation
+        function createMediaCard(media) {
+            const card = document.createElement('div');
+            card.className = 'media-card';
+            card.setAttribute('data-id', media.id);
+            card.setAttribute('data-type', media.type);
+            
+            // Determine media URL and preview
+            let mediaUrl, previewUrl, photographer;
+            
+            if (media.type === 'photo') {
+                mediaUrl = media.src.large2x || media.src.large;
+                previewUrl = media.src.medium;
+                photographer = media.photographer;
+            } else {
+                // For videos, use the first video file
+                mediaUrl = media.video_files[0]?.link || '';
+                previewUrl = media.image || media.video_pictures[0]?.picture || '';
+                photographer = media.user.name;
+            }
+            
+            // Check if item is saved
+            const isSaved = appState.savedItems.some(item => item.id === media.id);
+            const isLiked = appState.likedItems.includes(media.id);
+            
+            // Card content
+            card.innerHTML = `
+                <div class="media-container">
+                    ${media.type === 'photo' 
+                        ? `<img src="${previewUrl}" alt="${photographer}" class="media-image" loading="lazy">`
+                        : `<img src="${previewUrl}" alt="${photographer}" class="media-image" loading="lazy">
+                           <div class="play-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                               <i class="fas fa-play" style="color: white; font-size: 24px; margin-left: 5px;"></i>
+                           </div>`
+                    }
+                    <div class="media-badge ${media.type}">
+                        <i class="fas ${media.type === 'photo' ? 'fa-camera' : 'fa-video'}"></i>
+                        <span>${media.type.toUpperCase()}</span>
+                    </div>
+                </div>
+                <div class="media-info">
+                    <div class="photographer">
+                        <i class="fas fa-user"></i>
+                        <span>${photographer}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${media.id}">
+                            <i class="fas fa-heart"></i>
+                            <span>Like</span>
+                        </button>
+                        <button class="action-btn save-btn ${isSaved ? 'saved' : ''}" data-id="${media.id}" data-type="${media.type}">
+                            <i class="fas fa-bookmark"></i>
+                            <span>${isSaved ? 'Saved' : 'Save'}</span>
+                        </button>
+                        <button class="action-btn download-btn" data-url="${mediaUrl}" data-filename="${photographer}-${media.id}.${media.type === 'photo' ? 'jpg' : 'mp4'}">
+                            <i class="fas fa-download"></i>
+                            <span>Download</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners to card buttons
+            const likeBtn = card.querySelector('.like-btn');
+            const saveBtn = card.querySelector('.save-btn');
+            const downloadBtn = card.querySelector('.download-btn');
+            const playOverlay = card.querySelector('.play-overlay');
+            
+            likeBtn.addEventListener('click', () => toggleLike(media.id, likeBtn));
+            saveBtn.addEventListener('click', () => toggleSave(media, saveBtn));
+            downloadBtn.addEventListener('click', () => downloadMedia(mediaUrl, `${photographer}-${media.id}.${media.type === 'photo' ? 'jpg' : 'mp4'}`));
+            
+            if (playOverlay) {
+                playOverlay.addEventListener('click', () => openVideoModal(media));
+            }
+            
+            // Also make the whole image clickable for video play
+            if (media.type === 'video') {
+                const mediaImage = card.querySelector('.media-image');
+                mediaImage.style.cursor = 'pointer';
+                mediaImage.addEventListener('click', () => openVideoModal(media));
+            }
+            
+            return card;
+        }
+        
+        // Like Functionality
+        function toggleLike(id, button) {
+            const index = appState.likedItems.indexOf(id);
+            
+            if (index === -1) {
+                // Like
+                appState.likedItems.push(id);
+                button.classList.add('liked');
+                button.innerHTML = '<i class="fas fa-heart"></i><span>Liked</span>';
+            } else {
+                // Unlike
+                appState.likedItems.splice(index, 1);
+                button.classList.remove('liked');
+                button.innerHTML = '<i class="fas fa-heart"></i><span>Like</span>';
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('likedItems', JSON.stringify(appState.likedItems));
+        }
+        
+        // Save Functionality
+        function toggleSave(media, button) {
+            const { id, type, photographer } = media;
+            
+            // Get media URL and preview
+            let url, preview;
+            if (type === 'photo') {
+                url = media.src.large2x || media.src.large;
+                preview = media.src.medium;
+            } else {
+                url = media.video_files[0]?.link || '';
+                preview = media.image || media.video_pictures[0]?.picture || '';
+            }
+            
+            const saveItem = { id, type, url, preview, photographer };
+            const index = appState.savedItems.findIndex(item => item.id === id);
+            
+            if (index === -1) {
+                // Save
+                appState.savedItems.push(saveItem);
+                button.classList.add('saved');
+                button.innerHTML = '<i class="fas fa-bookmark"></i><span>Saved</span>';
+                
+                // Show notification
+                showNotification('Item saved to your collection');
+            } else {
+                // Remove from saved
+                appState.savedItems.splice(index, 1);
+                button.classList.remove('saved');
+                button.innerHTML = '<i class="fas fa-bookmark"></i><span>Save</span>';
+                
+                // Update saved grid if we're on saved tab
+                if (appState.currentTab === 'savedTab') {
+                    updateSavedGrid();
+                }
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('savedItems', JSON.stringify(appState.savedItems));
+        }
+        
+        // Update Saved Grid
+        function updateSavedGrid() {
+            const savedGrid = document.getElementById('savedGrid');
+            const savedEmpty = document.getElementById('savedEmpty');
+            
+            savedGrid.innerHTML = '';
+            
+            if (appState.savedItems.length === 0) {
+                savedEmpty.classList.remove('hidden');
+                return;
+            }
+            
+            savedEmpty.classList.add('hidden');
+            
+            appState.savedItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                card.setAttribute('data-id', item.id);
+                card.setAttribute('data-type', item.type);
+                
+                card.innerHTML = `
+                    <div class="media-container">
+                        <img src="${item.preview}" alt="${item.photographer}" class="media-image" loading="lazy">
+                        <div class="media-badge ${item.type}">
+                            <i class="fas ${item.type === 'photo' ? 'fa-camera' : 'fa-video'}"></i>
+                            <span>${item.type.toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div class="media-info">
+                        <div class="photographer">
+                            <i class="fas fa-user"></i>
+                            <span>${item.photographer}</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn download-btn" data-url="${item.url}" data-filename="${item.photographer}-${item.id}.${item.type === 'photo' ? 'jpg' : 'mp4'}">
+                                <i class="fas fa-download"></i>
+                                <span>Download</span>
+                            </button>
+                            <button class="action-btn remove-btn remove-saved-btn" data-id="${item.id}">
+                                <i class="fas fa-trash"></i>
+                                <span>Remove</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add event listeners
+                const downloadBtn = card.querySelector('.download-btn');
+                const removeBtn = card.querySelector('.remove-saved-btn');
+                
+                downloadBtn.addEventListener('click', () => downloadMedia(item.url, `${item.photographer}-${item.id}.${item.type === 'photo' ? 'jpg' : 'mp4'}`));
+                removeBtn.addEventListener('click', () => removeFromSaved(item.id, card));
+                
+                savedGrid.appendChild(card);
+            });
+        }
+        
+        // Remove from Saved
+        function removeFromSaved(id, cardElement) {
+            // Remove from state
+            const index = appState.savedItems.findIndex(item => item.id === id);
+            if (index !== -1) {
+                appState.savedItems.splice(index, 1);
+            }
+            
+            // Remove from DOM
+            cardElement.remove();
+            
+            // Update localStorage
+            localStorage.setItem('savedItems', JSON.stringify(appState.savedItems));
+            
+            // Update saved grid if empty
+            if (appState.savedItems.length === 0) {
+                document.getElementById('savedEmpty').classList.remove('hidden');
+            }
+            
+            // Also update any save buttons in other tabs
+            document.querySelectorAll(`.save-btn[data-id="${id}"]`).forEach(btn => {
+                btn.classList.remove('saved');
+                btn.innerHTML = '<i class="fas fa-bookmark"></i><span>Save</span>';
+            });
+        }
+        
+        // Download Functionality
+        async function downloadFile(url, filename) {
+            try {
+                // Show downloading notification
+                showNotification('Downloading...');
+                
+                const res = await fetch(url, { 
+                    mode: "cors",
+                    headers: {
+                        'Authorization': PEXELS_API_KEY
+                    }
+                });
+                const blob = await res.blob();
+                const blobURL = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = blobURL;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(blobURL);
+                
+                // Add to download history
+                const downloadItem = {
+                    id: Date.now(),
+                    filename,
+                    url,
+                    date: new Date().toLocaleString()
+                };
+                
+                appState.downloadedItems.unshift(downloadItem);
+                localStorage.setItem('downloadedItems', JSON.stringify(appState.downloadedItems));
+                
+                // Update downloads list if we're on downloads tab
+                if (appState.currentTab === 'downloadsTab') {
+                    updateDownloadsList();
+                }
+                
+                showNotification('Download completed!');
+            } catch (error) {
+                console.error('Download error:', error);
+                showNotification('Download failed. Please try again.', true);
+            }
+        }
+        
+        function downloadMedia(url, filename) {
+            downloadFile(url, filename);
+        }
+        
+        // Video Modal
+        function openVideoModal(video) {
+            // Set current video
+            appState.currentVideo = video;
+            
+            // Get highest quality video
+            const videoFile = video.video_files.reduce((prev, current) => 
+                (prev.width > current.width) ? prev : current
+            );
+            
+            // Set video source
+            modalVideoPlayer.src = videoFile.link;
+            modalPhotographer.textContent = video.user.name;
+            
+            // Show modal
+            videoModal.style.display = 'block';
+            
+            // Play video
+            modalVideoPlayer.play();
+        }
+        
+        function downloadCurrentVideo() {
+            if (!appState.currentVideo) return;
+            
+            const videoFile = appState.currentVideo.video_files.reduce((prev, current) => 
+                (prev.width > current.width) ? prev : current
+            );
+            
+            const filename = `${appState.currentVideo.user.name}-${appState.currentVideo.id}.mp4`;
+            downloadMedia(videoFile.link, filename);
+        }
+        
+        // Update Downloads List
+        function updateDownloadsList() {
+            const downloadsList = document.getElementById('downloadsList');
+            const downloadsEmpty = document.getElementById('downloadsEmpty');
+            
+            downloadsList.innerHTML = '';
+            
+            if (appState.downloadedItems.length === 0) {
+                downloadsEmpty.classList.remove('hidden');
+                return;
+            }
+            
+            downloadsEmpty.classList.add('hidden');
+            
+            // Create a simple list of downloads
+            appState.downloadedItems.forEach(item => {
+                const downloadItem = document.createElement('div');
+                downloadItem.className = 'media-card';
+                downloadItem.style.marginBottom = '10px';
+                downloadItem.style.padding = '15px';
+                
+                const fileName = item.filename.length > 40 
+                    ? item.filename.substring(0, 40) + '...' 
+                    : item.filename;
+                
+                downloadItem.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">${fileName}</div>
+                            <div style="font-size: 12px; color: var(--light-text);">${item.date}</div>
+                        </div>
+                        <button class="action-btn download-again-btn" data-url="${item.url}" data-filename="${item.filename}">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                `;
+                
+                const downloadAgainBtn = downloadItem.querySelector('.download-again-btn');
+                downloadAgainBtn.addEventListener('click', () => downloadMedia(item.url, item.filename));
+                
+                downloadsList.appendChild(downloadItem);
+            });
+        }
+        
+        // Notification System
+        function showNotification(message, isError = false) {
+            // Remove existing notification
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // Create notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${isError ? 'error' : 'success'}`;
+            notification.textContent = message;
+            
+            // Style notification
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.padding = '15px 20px';
+            notification.style.borderRadius = '8px';
+            notification.style.backgroundColor = isError ? '#ff4444' : '#4CAF50';
+            notification.style.color = 'white';
+            notification.style.fontWeight = '600';
+            notification.style.zIndex = '10000';
+            notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            notification.style.animation = 'slideIn 0.3s ease-out';
+            
+            // Add to DOM
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 3000);
+            
+            // Add keyframes for animation
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        // Infinite Scroll (simplified)
+        window.addEventListener('scroll', () => {
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            
+            if (scrollTop + clientHeight >= scrollHeight - 100) {
+                // Load more content based on current tab
+                if (appState.currentTab === 'homeTab') {
+                    appState.homePage++;
+                    loadMoreHomeContent();
+                }
+            }
+        });
+        
+        async function loadMoreHomeContent() {
+            const homeGrid = document.getElementById('homeGrid');
+            
+            // Fetch more photos
+            const photosData = await fetchPhotos(appState.homePage, 10);
+            
+            // Add to grid
+            photosData.photos.forEach(photo => {
+                const card = createMediaCard({ ...photo, type: 'photo' });
+                homeGrid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
